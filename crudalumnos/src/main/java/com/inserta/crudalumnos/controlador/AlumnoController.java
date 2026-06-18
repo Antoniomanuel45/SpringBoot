@@ -10,7 +10,9 @@ import io.swagger.v3.oas.annotations.Operation;
 
 import java.util.List;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 
 
@@ -28,18 +30,34 @@ public class AlumnoController {
         this.alumnoRepo = alumnoRepo;
     }
 
-    //Por cada endpoint se crea un metodo
-    //endpoint -> http://localhost:8080/api/alumnos/consultar
-    //añadimos Swagger Control + MAY + p
-    //spring initializr:add Starter > Springdoc open Api web
-    //se añade el paquete [proceed] y se añade al Paht
-    //En la application.properties se añade la url.path de swagger 
-    // http://localhost:8080/swagger-ui/index.html
     @GetMapping("/consultar")
     @Operation(summary = "Lista alumnos")
     public List <Alumno> verAlumnos(){
         return alumnoRepo.findAll();
     }
+       //Por cada endpoint se crea un metodo
+    //endpoint -> http://localhost:8080/api/alumnos/consultar
+    //añadimos Swagger Control + MAY + p
+    //spring initializr:add Starter > Springdoc open Api web
+    //se añade el paquete [proceed] y se añade al Paht
+    //En la application.properties se añade la url.path de swagger 
+    // http://localhost:8080/swagger-ui/index.html 
+    
+
+    //GET por parametros PK(findById) -> Parametros van con { }
+    @GetMapping("/consultar/{nif}")
+    @Operation(summary = "Ver alumno por NIF")
+    public ResponseEntity <Alumno> verAlumnosPorNIF(@PathVariable String nif){
+        return alumnoRepo.findById(nif)
+        .map(ResponseEntity::ok)
+        .orElse(ResponseEntity.notFound().build());
+
+    }
+
+    
+    
+    }
+    
 
 
     
@@ -49,4 +67,4 @@ public class AlumnoController {
 
    
 
-}
+

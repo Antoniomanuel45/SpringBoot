@@ -31,13 +31,7 @@ public class AsignaturaController {
         this.asignaturaRepo = asignaturaRepo;
     }
 
-    //Por cada endpoint se crea un metodo
-    //endpoint -> http://localhost:8080/api/alumnos/consultar
-    //añadimos Swagger Control + MAY + p
-    //spring initializr:add Starter > Springdoc open Api web
-    //se añade el paquete [proceed] y se añade al Paht
-    //En la application.properties se añade la url.path de swagger 
-    // http://localhost:8080/swagger-ui/index.html
+    
     @GetMapping("/consultar")
     @Operation(summary = "Lista asignaturas")
     public List <Asignatura> verAsignaturas(){
