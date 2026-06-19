@@ -3,6 +3,11 @@ package com.inserta.crudalumnos.modelo;
 import java.util.ArrayList;
 import java.util.List;
 
+<<<<<<< HEAD
+=======
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+>>>>>>> 5206bdef49cc2cceea7014c42d8cf141d5d861c9
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -33,9 +38,16 @@ public class Alumno {
     private boolean genero;     // SQL -> genero BOOLEAN
 
     // Se añade las relaciones en la tabla principal
+<<<<<<< HEAD
     //en le mappedBy s epone el nombre de la clase en minuscula
     @OneToMany(mappedBy = "alumno")
     private List<AlumnoAsignatura> alumnoAsignaturas = new ArrayList<>();
 
+=======
+    // En el mappedBy se pone el nombre de la clase en minúsculas
+    @OneToMany(mappedBy = "alumno")
+    @JsonIgnore
+    private List<AlumnoAsignatura> alumnoAsignaturas = new ArrayList<>();
+>>>>>>> 5206bdef49cc2cceea7014c42d8cf141d5d861c9
     
 }
