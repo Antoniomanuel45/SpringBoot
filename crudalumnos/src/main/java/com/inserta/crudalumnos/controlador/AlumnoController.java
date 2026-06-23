@@ -12,10 +12,14 @@ import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.repository.query.Param;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+
 
 
 /**
@@ -26,7 +30,12 @@ import org.springframework.web.bind.annotation.RequestParam;
  * - GET R03 → /api/alumnos/consultar/ordenado  → Consulta ordenada por campo=edad
  * - GET R04 → /api/alumnos/consultar/pagina    → Consulta paginada (LIMIT 0,5)
  * - GET R05 → /api/alumnos/existe/{nif}        → Consulta booleana por PK
- * - GET R06 → /api/alumnos/contar
+ * - GET R06 → /api/alumnos/contar              → Cuenta los alumnos
+ * - GET R07 → /api/alumnos/nombre              → Filtra por nombre 
+ * - GET R08 → /api/alumnos/genero/mujeres      → Filtra por mujeres
+ * - GET R09   /api/alumnos/genero/hombre       → Filtra por hombres 
+ * - GET R10   /api/alumnos/contar/mujeres      → Cuenta las mujeres 
+ * - GET R11   /api/alumnos/contar/hombre       → cuenta los hom
  */
 
 
@@ -48,7 +57,7 @@ public class AlumnoController {
     // GET R01 → /api/alumnos/consultar
     @GetMapping("/consultar")
     @Operation(summary = "Lista alumnos")
-    public List<Alumno> verAlumnos(){
+    public List<Alumno> verTodosAlumnos(){
         return alumnoRepo.findAll();
     }
     
@@ -99,18 +108,78 @@ public class AlumnoController {
     // Ej: http://localhost:8080/api/alumnos/contar
     // GET R06 → /api/alumnos/contar
     @GetMapping("/contar")
-    public long contarAlumnos() {
+    public long contarTodosAlumnos() {
         return alumnoRepo.count();
     }
-
+    //http://localhost:8080/api/alumnos/consultar/nombre?nombre=alex
     // GET R07 → /api/alumnos/consultar/nombre
     // Paso1: Al no ser método estandar, se añade al repo
     // Paso2: Se agrega el nuevo método del repo aquí en el controlador
     @GetMapping("/consultar/nombre")
     @Operation(summary = "Buscar alumnos que contengan parte de 'nombre'")
-    public String getMethodName(@RequestParam String param) {
-        return new String();
+    public List<Alumno> buscaPorNombre(@RequestParam String nombre) {
+        return alumnoRepo.findByNombreContainingIgnoreCase(nombre);
     }
+
+    // GET R08 → /api/alumnos/consultar/genero/mujeres
+      @GetMapping("/consultar/genero/mujeres")
+      public List<Alumno>verAlumnas() {
+          return alumnoRepo.findByGenero(true);
+      }
+
+    // GET 09 → /api/alumnos/consultar/genero/hombres
+    @GetMapping("/consultar/genero")
+    public List<Alumno> verAlumnos() {
+        return alumnoRepo.findByGenero(false);
+    }
+
+    // GET 10 → /api/alumnos/consultar/genero/mujeres
+    @GetMapping("/consultar/contar/mujeres")
+    @Operation(summary = "Contar Alumnas")
+    public long contarAlumnas() {
+        return alumnoRepo.countByGenero(true);
+    }
+     // GET 11 → /api/alumnos/consultar/genero/hombres
+    @GetMapping("/consultar/contar/hombres")
+    @Operation(summary = "Contar Alumnos")
+    public long contarAlumnos() {
+        return alumnoRepo.countByGenero(pathfalse);
+    }
+
+    // POST - C01 → /api/alumnos/crear/{nif}/{nombre}/{edad}/{genero}
+    // El orden de los parametros DA IGUAL,pero los nombres deben ser iguales
+    // Consejo: En los PathVariables usar siempre OBJETOS (para llegadas nulas) 
+    @PostMapping("/api/alumnos/crear/{nif}/{nombre}/{edad}/{genero}")
+    @Operation (summary = "Inserta Alumno por parametros en la URL")
+    public Alumno crearAlumnoParametros(
+        @PathVariable   String  nif,
+        @PathVariable   String  nombre,
+        @PathVariable   Integer edad,
+        @PathVariable   boolean genero  
+    ){
+        Alumno alumno = new Alumno(); // Objeto vacio
+        alumno.setNif(nif);
+        alumno.setNombre(nombre);
+        alumno.setGenero(genero);
+        alumno.setEdad(edad);
+        return alumnoRepo.save(alumno);
+    }
+
+    // POST - C02 → /api/alumnos/crear
+    @PostMapping("/crear")
+    @Operation (summary = "Inserta alumno por JSON")
+    public Alumno crearAlumnoJSON(@RequestBody Alumno alumno) {
+        
+        return alumnoRepo.save(alumno);
+    }
+    
+    
+
+
+    
+      
+
+    
     
     
 }
