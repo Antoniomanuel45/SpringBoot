@@ -40,11 +40,7 @@ public class Asignatura {
 <<<<<<< HEAD
     //Vamos a añadir un campo ENUM
     //IMPORTANTE:No hace falta crear la tabla del ENUM (aulas)
-    @ElementCollection 
-    @CollectionTable (name = "asignaturas_aulas",
-        joinColumns = @JoinColumn(name = "asignatura_id")
-    )
-    private List<Float> aulas = new ArrayList<>();
+   
 
     
 
