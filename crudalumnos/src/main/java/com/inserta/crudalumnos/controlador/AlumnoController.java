@@ -9,10 +9,12 @@ import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -40,7 +42,16 @@ import org.springframework.web.bind.annotation.PutMapping;
  * 
  * - POST - C01 → /api/alumnos/crear/{nif}/{nombre}/{edad}/{genero} 🧨  → Insertar por parámetros
  * - POST - C02 → /api/alumnos/crear 🧨                 → Insertar por JSON
- * - POST - C03 → /api/alumnos/crear/lote               → insertar por JSON en lote
+ * - POST - C03 → /api/alumnos/crear/lote 🧨            → insertar por JSON en lote
+ * 
+ * - PUT - U01 → /api/alumnos/actualizar/{nif}          → Actualiza por param/JSON
+ * - PUT - U02 → /api/alumnos/actualizar  🧨            → Actualiza por JSON
+ * - PUT - U03 → /api/alumnos/actualizar/{nif}/{nombre}/{edad}/{genero} 🧨
+ * 
+ * - DELETE - D01 → /api/alumnos/borrar/{nif} 
+ * - DELETE - D02 → /api/alumnos/borrar/sencillo/{nif} 🧨
+ * - DELETE - D03 → /api/alumnos/borrar 🧨
+ * - DELETE - D04 → /api/alumnos/borrar/todo
  */
 
 
@@ -193,62 +204,105 @@ public class AlumnoController {
         return alumnoRepo.saveAll(alumnos);
     }
     
+    // Ej: Nif: 33C → { "edad": 30 } 
     // PUT - U01 → /api/alumnos/actualizar/{nif}
     @PutMapping("/actualizar/{nif}")
-    @Operation(summary = "Actualizar un alumno por parámetros en la URL")
+    @Operation(summary = "Actualizar un alumno por NIF en la URL")
     public Alumno actualizarAlumnoNIF(
         @PathVariable String nif, @RequestBody Alumno alumnoJSON) {
-        //Busco el alumno para actualizar
+        // Busco el alumno para actualizar
         Alumno alumno = alumnoRepo.findById(nif)
-        .orElseThrow(()-> new RuntimeException("Alumno no encontrado"));
-        
-        if(alumnoJSON.getNombre()!= null){
-            alumno.setNombre(alumnoJSON.getNombre());}
-        if (alumnoJSON.getEdad()!= null){
-            alumno.setEdad(alumnoJSON.getEdad());}
-        if(alumnoJSON.getGenero()){
-            alumno.setGenero(alumnoJSON.getGenero());}
+                        .orElseThrow(()-> 
+                        new RuntimeException("Alumno no encontrado"));
 
+        if(alumnoJSON.getNombre() != null){
+            alumno.setNombre(alumnoJSON.getNombre());}
+        if(alumnoJSON.getEdad() != null){
+            alumno.setEdad(alumnoJSON.getEdad());}
+        if(alumnoJSON.getGenero() != null){
+            alumno.setGenero(alumnoJSON.getGenero());}
+        
         return alumnoRepo.save(alumno);
     }
 
-    // PUT - U02 → /api/alumnos/actualizar/
+    // Ej: { "nif": "11A", "nombre": "Alejandro Párraga","edad": 24 }
+    // PUT - U02 → /api/alumnos/actualizar
     @PutMapping("/actualizar")
-    @Operation(summary = "Actualizar un alumno por parámetros en la URL")
+    @Operation(summary = "Actualizar un alumno por JSON")
     public Alumno actualizarAlumnoJSON(@RequestBody Alumno alumnoJSON) {
-        //Busco el alumno para actualizar
+        // Busco el alumno para actualizarnif
         Alumno alumno = alumnoRepo.findById(alumnoJSON.getNif())
-        .orElseThrow(()-> new RuntimeException("Alumno no encontrado"));
-        
-        if(alumnoJSON.getNombre()!= null){
-            alumno.setNombre(alumnoJSON.getNombre());}
-        if (alumnoJSON.getEdad()!= null){
-            alumno.setEdad(alumnoJSON.getEdad());}
-        if(alumnoJSON.getGenero()){
-            alumno.setGenero(alumnoJSON.getGenero());}
+                        .orElseThrow(()-> 
+                        new RuntimeException("Alumno no encontrado"));
 
+        if(alumnoJSON.getNombre() != null){
+            alumno.setNombre(alumnoJSON.getNombre());}
+        if(alumnoJSON.getEdad() != null){
+            alumno.setEdad(alumnoJSON.getEdad());}
+        if(alumnoJSON.getGenero() != null){
+            alumno.setGenero(alumnoJSON.getGenero());}
+        
         return alumnoRepo.save(alumno);
     }
 
-    //PUT - 03 → /api/alumnos/crear/{nif}/{nombre}/{edad}/{genero}
+    // Ej: http://localhost:8080/api/alumnos/actualizar/22B/Miguel%20%C3%81ngel%20Rider/39/false
+    // PUT - U03 → /api/alumnos/actualizar/{nif}/{nombre}/{edad}/{genero}
+    // Los parámetros TODOS son obligatorios
     @PutMapping("/actualizar/{nif}/{nombre}/{edad}/{genero}")
-    @Operation(summary = "Actualizar un alumno por parámetros en la URL")
+    @Operation(summary = "Actualizar un alumno por NIF en la URL")
     public Alumno actualizarAlumno(
-        @PathVariable String nif, 
+        @PathVariable String nif,
         @PathVariable String nombre,
         @PathVariable Integer edad,
-        @PathVariable Boolean genero) {
-        //Busco el alumno para actualizar
+        @PathVariable Boolean genero ) {
+        // Busco el alumno para actualizar
         Alumno alumno = alumnoRepo.findById(nif)
-        .orElseThrow(()-> new RuntimeException("Alumno no encontrado"));
-       
+                        .orElseThrow(()-> 
+                        new RuntimeException("Alumno no encontrado"));
+
             alumno.setNombre(nombre);
             alumno.setEdad(edad);
             alumno.setGenero(genero);
+        
         return alumnoRepo.save(alumno);
     }
 
-    
+    // Ej: http://localhost:8080/api/alumnos/borrar/11A
+    // ESTE es el que usa a nivel profesional!
+    // DELETE - D01 → /api/alumnos/borrar/{nif}
+    @DeleteMapping("/borrar/{nif}")
+    @Operation(summary = "Borrar alumno por NIF (PK)")
+    public ResponseEntity<String> borrarAlumno(@PathVariable String nif){
+        if(!alumnoRepo.existsById(nif)){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).
+                body("Alumno/a no encontrado");
+        }
+        alumnoRepo.deleteById(nif);
+        return ResponseEntity.ok("Alumno/a borrado de la BBDD");
+    }
+
+    // EJ: http://localhost:8080/api/alumnos/borrar/sencillo/14234
+    // DELETE - D02 → /api/alumnos/borrar/sencillo/{nif}
+    @DeleteMapping("/borrar/sencillo/{nif}")
+    @Operation(summary = "Borrar alumno por NIF (PK) - Modo Sencillo")
+    public void borrarAlumnoSencillo (@PathVariable String nif){
+        alumnoRepo.deleteById(nif);
+    }
+
+    // Ej: ["22B", "44D"] → Elimino a Rider y a Jaime
+    // DELETE - D03 → /api/alumnos/borrar
+    @DeleteMapping("/borrar")
+    @Operation(summary = "Borrar alumno por JSON (incluido LOTE)")
+    public void borrarVariosAlumnos(@RequestBody List<String> nifs){
+        alumnoRepo.deleteAllById(nifs);
+    }
+
+    // DELETE - D04 → /api/alumnos/borrar/todo
+    @DeleteMapping("/borrar/todo")
+    @Operation(summary = "Borrar todos los alumnos")
+    public void borrarTodosAlumnos(){
+        alumnoRepo.deleteAll();
+    }
 
 
 }
