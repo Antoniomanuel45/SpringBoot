@@ -1,5 +1,7 @@
 package com.inserta.crudalumnos.repositorio;
 
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -43,17 +45,36 @@ public interface AlumnoAsignaturaRepository extends JpaRepository<AlumnoAsignatu
     boolean existeMatricula (
         @Param("nif") String nif,
         @Param("idAsignatura") Integer idAsignatura);
-
+/**
+ * Borrado de matricula personalizado
+ * @param nif
+ * @param idAsignatura
+ */
     @Modifying     //Operar en la base de datos 
     @Transactional //Ejecuta una trasanccion
     @Query("""
-            DELETE FORM AlumnoAsignatura aa
+            DELETE FROM AlumnoAsignatura aa
             WHERE aa.alumno.nif = :nif
-            AND aa.asignatura.id = idAsignatura
+            AND aa.asignatura.id = :idAsignatura
             """)
 
-    void borrarMatricula(@Param("nif") String nif,@Param("idAsigantura") Integer idAsignatura);
-            
+    void borrarMatricula(@Param("nif") String nif,@Param("idAsignatura") Integer idAsignatura);
 
+    //Vamos a sacar todas las matriculas de un alumno (nif)
+    //Ej:SELECT asignaturas.denominacion
+    /*ºFROM asignaturas, alumnos_asignaturas, alumnos
+     WHERE asignaturas.id = alumnos_asignaturas.asignatura_id
+     AND alumnos.nif = alumnos_asignaturas.alumno_nif
+     AND alumnos.nif = '44D'
+     ORDER BY asignaturas.denominacion ASC;
+     */
+    @Query("""
+            SELECT aa.asignatura.denominacion
+                FROM AlumnoAsignatura aa   
+                WHERE aa.alumno.nif = :nif 
+                ORDER BY aa.asignatura.denominacion ASC
+            """)
+            List<String> asignaturasPorAlumno (@Param("nif")String nif);
+        
 
 }

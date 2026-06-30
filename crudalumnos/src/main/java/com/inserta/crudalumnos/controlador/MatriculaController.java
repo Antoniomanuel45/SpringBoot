@@ -1,5 +1,9 @@
 package com.inserta.crudalumnos.controlador;
 
+import java.util.List;
+
+import javax.print.DocFlavor.READER;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
@@ -71,6 +75,7 @@ public class MatriculaController {
             .body("Asignatura no encontrada");
         }
         //Si esta todo correcto,entonces MATRICULO!
+        //La salida si todo es correcto es un JSON con la nueva ID de matricula
         AlumnoAsignatura matricula = new AlumnoAsignatura(null, alumno, asignatura);
         return ResponseEntity.ok(alumnoAsignaturaRepo.save(matricula));
     }
@@ -87,8 +92,20 @@ public class MatriculaController {
             return ResponseEntity.notFound().build();
         }
 
-        // Vale, la matricula. Ahora toca borrar
+        // 2.Vale, la matricula. Ahora toca borrar
+        alumnoAsignaturaRepo.borrarMatricula(nif, idAsignatura);
+        return ResponseEntity.noContent().build(); //Salida 204 sin nada
+
+
+        //GET - R01 - Listado de asignaturas por alumno
 
     }
+    
+    @GetMapping("/verAsignaturas/{nif}")
+    public  ResponseEntity<List<String>> verAsignaturasNIF (@PathVariable String nif) {
+        List<String> denominaciones = alumnoAsignaturaRepo.asignaturasPorAlumno(nif); 
+        return ResponseEntity.ok(denominaciones);
+    }
+    
 
 }
